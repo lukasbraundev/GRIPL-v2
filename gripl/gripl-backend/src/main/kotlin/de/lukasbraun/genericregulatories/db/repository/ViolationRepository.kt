@@ -1,6 +1,7 @@
-package de.lukasbraun.genericregulatories.db.dto
+package de.lukasbraun.genericregulatories.db.repository
 
-import de.lukasbraun.genericregulatories.db.repository.IDatabaseRepository
+import de.lukasbraun.genericregulatories.db.dto.ComplianceViolationServerity
+import de.lukasbraun.genericregulatories.db.dto.Violation
 import org.springframework.jdbc.core.JdbcTemplate
 import java.sql.ResultSet
 
@@ -11,6 +12,7 @@ class ViolationRepository(
     private val mapper = { rs: ResultSet, _: Int ->
         Violation.fromRow(
             id = rs.getLong("id"),
+            complianceRuleId = rs.getLong("compliance_rule_id"),
             severity = ComplianceViolationServerity.valueOf(rs.getString("severity")),
             title = rs.getString("title"),
             message = rs.getString("message"),
@@ -19,8 +21,8 @@ class ViolationRepository(
     }
 
     override fun add(entity: Violation) {
-        val sql = "INSERT INTO ${Violation.TABLE_NAME} (severity, title, message, recommendation) VALUES (?, ?, ?, ?)"
-        jdbc.update(sql, entity.severity.name, entity.title, entity.message, entity.recommendation)
+        val sql = "INSERT INTO ${Violation.TABLE_NAME} (compliance_rule_id, severity, title, message, recommendation) VALUES (?, ?, ?, ?, ?)"
+        jdbc.update(sql, entity.complianceRuleId, entity.severity.name, entity.title, entity.message, entity.recommendation)
     }
 
     override fun getById(id: Long): Violation? {
@@ -40,7 +42,7 @@ class ViolationRepository(
 
     override fun update(entity: Violation) {
         val sql =
-            "UPDATE ${Violation.TABLE_NAME} SET severity = ?, title = ?, message = ?, recommendation = ? WHERE id = ?"
-        jdbc.update(sql, entity.severity.name, entity.title, entity.message, entity.recommendation, entity.id)
+            "UPDATE ${Violation.TABLE_NAME} SET compliance_rule_id = ?, severity = ?, title = ?, message = ?, recommendation = ? WHERE id = ?"
+        jdbc.update(sql, entity.complianceRuleId, entity.severity.name, entity.title, entity.message, entity.recommendation, entity.id)
     }
 }
