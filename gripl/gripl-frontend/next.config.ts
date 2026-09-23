@@ -16,11 +16,16 @@ const nextConfig: NextConfig = {
         return config;
     },
     async rewrites() {
+        const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080";
         const ragBase = process.env.RAG_INTERNAL_URL ?? "http://gripl-rag:8081";
+        // Log the rewrites for debugging purposes
+        console.log("Rewrites:");
+        console.log(`API Base URL: ${apiBase}`);
+        console.log(`RAG Base URL: ${ragBase}`);
         return [
             {
                 source: '/api/:path*',
-                destination: `${process.env.NEXT_PUBLIC_API_BASE_URL}/:path*`,
+                destination: `${apiBase}/:path*`,
             },
             {
                 source: '/rag/:path*',

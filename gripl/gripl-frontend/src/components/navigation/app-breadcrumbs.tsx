@@ -5,6 +5,7 @@ import {generateBreadcrumbs} from "@/lib/breadcrumbs";
 import {Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbSeparator} from "@/components/ui/breadcrumb";
 import Link from "next/link";
 import {useEffect, useState} from "react";
+import {Fragment} from "react";
 import {Crumb} from "@/models/Crumb";
 import {EvaluationData} from "@/models/dto/EvaluationData";
 
@@ -12,6 +13,7 @@ const nameMap = {
     "": 'Sandbox',
     labeling: "Labeling",
     thesis: "Thesis",
+    regulatories : "Regulatories",
 }
 
 export default function AppBreadCrumbs() {
@@ -53,14 +55,12 @@ export default function AppBreadCrumbs() {
 
     return <Breadcrumb>
         <BreadcrumbList>
-            <>
-            {crumbs.map((crumb, index) => <>
-                <BreadcrumbItem key={index}>
+            {crumbs.map((crumb, index) => <Fragment key={crumb.href}>
+                <BreadcrumbItem>
                     <Link href={crumb.href}>{crumb.label}</Link>
                 </BreadcrumbItem>
                 { index < crumbs.length - 1 && <BreadcrumbSeparator /> }
-            </> )}
-            </>
+            </Fragment> )}
         </BreadcrumbList>
     </Breadcrumb>
 }
