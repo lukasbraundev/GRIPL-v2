@@ -8,13 +8,37 @@ data class Constraint(
     val predicate : String,
     val operator: String, // TODO change to enum
     val condition: String,
-    val leftOperand: ComplianceConcept,
-    val rightOperand: ComplianceConcept
+    val leftOperandName: String,
+    val leftOperandConcept: ComplianceConceptCategory,
+    val rightOperandName: String,
+    val rightOperandConcept: ComplianceConceptCategory,
 )
 {
     companion object{
-        fun fromRow(id: Long, complianceRuleId: Long, perspective: CompliancePerspective, predicate: String, operator: String, condition: String, leftOperand: ComplianceConcept, rightOperand: ComplianceConcept): Constraint{
-            return Constraint(id = id, complianceRuleId = complianceRuleId, perspective = perspective, predicate = predicate, operator = operator, condition = condition, leftOperand = leftOperand, rightOperand = rightOperand)
+        fun fromRow(
+            id: Long,
+            complianceRuleId: Long,
+            perspective: CompliancePerspective,
+            predicate: String,
+            operator: String,
+            condition: String,
+            leftOperandName: String,
+            leftOperandConcept: ComplianceConceptCategory,
+            rightOperandName: String,
+            rightOperandConcept: ComplianceConceptCategory
+        ): Constraint {
+            return Constraint(
+                id = id,
+                complianceRuleId = complianceRuleId,
+                perspective = perspective,
+                predicate = predicate,
+                operator = operator,
+                condition = condition,
+                leftOperandName = leftOperandName,
+                leftOperandConcept = leftOperandConcept,
+                rightOperandName = rightOperandName,
+                rightOperandConcept = rightOperandConcept
+            )
         }
         internal const val TABLE_NAME = "constraint"
     }
@@ -31,5 +55,20 @@ enum class CompliancePerspective {
     PROCESSOR,
     CONTROLLER,
     ENCRYPTION,
+    RETENTION_PERIOD,
+}
+
+enum class ComplianceConceptCategory {
+    PERSONAL_DATA,
+    SENSITIVE_DATA,
+    CONSENT,
+    LEGAL_BASIS,
+    CUSTOMER,
+    EMPLOYEE,
+    APPROVAL,
+    PROCESSOR,
+    CONTROLLER,
+    ENCRYPTION,
+    DELETION,
     RETENTION_PERIOD,
 }

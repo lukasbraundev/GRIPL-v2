@@ -19,27 +19,27 @@ class ExceptionRepository(
         )
     }
     override fun add(entity: Exception) {
-        val sql = "INSERT INTO ${Exception.TABLE_NAME} (compliance_rule_id, condition, description) VALUES (?, ?, ?)"
+        val sql = "INSERT INTO \"${Exception.TABLE_NAME}\" (compliance_rule_id, condition, description) VALUES (?, ?, ?)"
         jdbc.update(sql, entity.complianceRuleId, entity.condition, entity.description)
     }
 
     override fun getById(id: Long): Exception? {
-        val sql = "SELECT * FROM ${Exception.TABLE_NAME} WHERE id = ?"
+        val sql = "SELECT * FROM \"${Exception.TABLE_NAME}\" WHERE id = ?"
         return jdbc.query(sql, mapper, id).firstOrNull()
     }
 
     override fun getAll(): List<Exception> {
-        val sql = "SELECT * FROM ${Exception.TABLE_NAME}"
+        val sql = "SELECT * FROM \"${Exception.TABLE_NAME}\""
         return jdbc.query(sql, mapper)
     }
 
     override fun delete(id: Long) {
-        val sql = "DELETE FROM ${Exception.TABLE_NAME} WHERE id = ?"
+        val sql = "DELETE FROM \"${Exception.TABLE_NAME}\" WHERE id = ?"
         jdbc.update(sql, id)
     }
 
     override fun update(entity: Exception) {
-        val sql = "UPDATE ${Exception.TABLE_NAME} SET compliance_rule_id = ?, condition = ?, description = ? WHERE id = ?"
+        val sql = "UPDATE \"${Exception.TABLE_NAME}\" SET compliance_rule_id = ?, condition = ?, description = ? WHERE id = ?"
         jdbc.update(sql, entity.complianceRuleId, entity.condition, entity.description, entity.id)
     }
 }

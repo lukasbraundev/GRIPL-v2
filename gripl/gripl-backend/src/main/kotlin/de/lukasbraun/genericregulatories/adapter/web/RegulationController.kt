@@ -1,6 +1,5 @@
 package de.lukasbraun.genericregulatories.adapter.web
 
-import de.lukasbraun.genericregulatories.db.dto.ComplianceConcept
 import de.lukasbraun.genericregulatories.db.dto.Regulation
 import de.lukasbraun.genericregulatories.db.repository.IDatabaseRepository
 import io.swagger.v3.oas.annotations.Operation
@@ -14,7 +13,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.server.ResponseStatusException
 
 @RestController
 @RequestMapping("/regulation")
@@ -22,7 +20,6 @@ import org.springframework.web.server.ResponseStatusException
 class RegulationController (
     private val regulatoryRepository: IDatabaseRepository<Regulation>
 ){
-    // TODO Refactor to use Response Entities and proper error handling
     @Operation(
         summary = "Get Regulation by ID",
         description = "Returns the details of a regulation by its ID."
@@ -33,8 +30,21 @@ class RegulationController (
         return if (regulation != null) {
             ResponseEntity.ok(regulation)
         } else {
-            ResponseEntity(HttpStatus.NOT_FOUND)
+            ResponseEntity.status(HttpStatus.NOT_FOUND).body(null)
         }
+    }
+
+    @Operation(
+        summary = "Get all Regulations",
+        description = "Returns a list of all regulations in the database."
+    )
+    @GetMapping("/")
+    fun getAllRegulatory(): ResponseEntity<List<Regulation>> {
+        val regulations = regulatoryRepository.getAll()
+        if (regulations.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(emptyList())
+        }
+        return ResponseEntity.ok(regulations)
     }
 
     @Operation(
@@ -42,8 +52,9 @@ class RegulationController (
         description = "Adds a new regulation to the database."
     )
     @PostMapping("/")
-    fun addRegulatory(regulation: Regulation) {
+    fun addRegulatory(regulation: Regulation) : HttpStatus {
         regulatoryRepository.add(regulation)
+        return HttpStatus.CREATED
     }
 
     @Operation(

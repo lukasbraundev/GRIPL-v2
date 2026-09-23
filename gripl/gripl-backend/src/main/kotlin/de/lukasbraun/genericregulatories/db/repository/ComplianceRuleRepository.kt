@@ -21,7 +21,7 @@ class ComplianceRuleRepository (
         )
     }
     override fun add(entity: ComplianceRule) {
-        val sql = "INSERT INTO ${ComplianceRule.TABLE_NAME} (name, description, severity, regulation_id) VALUES (?, ?, ?, ?)"
+        val sql = "INSERT INTO ${ComplianceRule.TABLE_NAME} (name, description, severity, regulation_id) VALUES (?, ?, ?::compliance_severity, ?)"
         jdbc.update(sql, entity.name, entity.description, entity.severity.name, entity.regulationId)
     }
 
@@ -35,13 +35,18 @@ class ComplianceRuleRepository (
         return jdbc.query(sql, mapper)
     }
 
+    fun getAllByRegulationId(regulationId: Long): List<ComplianceRule> {
+        val sql = "SELECT * FROM ${ComplianceRule.TABLE_NAME} WHERE regulation_id = ?"
+        return jdbc.query(sql, mapper, regulationId)
+    }
+
     override fun delete(id: Long) {
         val sql = "DELETE FROM ${ComplianceRule.TABLE_NAME} WHERE id = ?"
         jdbc.update(sql, id)
     }
 
     override fun update(entity: ComplianceRule) {
-        val sql = "UPDATE ${ComplianceRule.TABLE_NAME} SET name = ?, description = ?, severity = ?, regulation_id = ? WHERE id = ?"
+        val sql = "UPDATE ${ComplianceRule.TABLE_NAME} SET name = ?, description = ?, severity = ?::compliance_severity, regulation_id = ? WHERE id = ?"
         jdbc.update(sql, entity.name, entity.description, entity.severity.name, entity.regulationId, entity.id)
     }
 }
