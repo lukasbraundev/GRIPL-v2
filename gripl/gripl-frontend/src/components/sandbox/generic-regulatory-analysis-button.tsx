@@ -18,12 +18,12 @@ import {useToast} from "@/components/ui/toast";
 import {toErrorMessage} from "@/lib/http-error";
 import {LlmPropsOverride} from "@/models/dto/MultiEvaluationRequest";
 import analyzeBpmnForGenericRegulatories from "@/actions/generic-regulatories/analyze-bpmn";
-import {AnalysisResponse} from "@/models/dto/AnalysisDto";
+import {AnalysisResult} from "@/models/dto/AnalysisDto";
 
 interface GenericRegulatoryAnalysisButtonProps {
     bpmnXml: string;
     llmProps: LlmPropsOverride;
-    setAnalysisResult: (result: AnalysisResponse | null) => void;
+    setAnalysisResult: (result: AnalysisResult | null) => void;
 }
 
 export default function GenericRegulatoryAnalysisButton({

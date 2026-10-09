@@ -4,7 +4,7 @@ import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/compo
 import {Button} from "@/components/ui/button";
 import {Download, FileText, RefreshCw} from "lucide-react";
 import {useState} from "react";
-import {AnalysisResponse} from "@/models/dto/AnalysisDto";
+import {AnalysisResponse, AnalysisResult} from "@/models/dto/AnalysisDto";
 import {Spinner} from "@/components/ui/spinner";
 import {Label} from "@/components/ui/label";
 import {Input} from "@/components/ui/input";
@@ -42,8 +42,8 @@ interface StoredAnalysisConfig {
 
 interface AnalysisToolCardProps {
     bpmnXml: string;
-    analysisResult: AnalysisResponse | null;
-    setAnalysisResult: (result: AnalysisResponse | null) => void;
+    analysisResult: AnalysisResult | null;
+    setAnalysisResult: (result: AnalysisResult | null) => void;
 }
 
 export default function AnalysisToolCard({ bpmnXml, analysisResult, setAnalysisResult }: AnalysisToolCardProps) {

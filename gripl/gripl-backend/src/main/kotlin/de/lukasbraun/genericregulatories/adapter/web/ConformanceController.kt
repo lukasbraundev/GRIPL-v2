@@ -3,7 +3,7 @@ package de.lukasbraun.genericregulatories.adapter.web
 import de.lukasbraun.genericregulatories.application.RegulatoryConformanceService
 import de.mertendieckmann.griplbackend.adapter.web.utils.ControllerUtils
 import de.mertendieckmann.griplbackend.config.LlmConfig
-import de.mertendieckmann.griplbackend.model.dto.AnalysisResponse
+import de.lukasbraun.genericregulatories.model.GenericRegulatoryAnalysisResponse
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.MediaType
@@ -37,7 +37,7 @@ class ConformanceController (
         @RequestPart("bpmnXml") bpmnXml: FilePart,
         @RequestPart("regulatoryIds") regulatoryIds: List<Long>,
         @RequestPart("llmProps", required = false) llmPropsOverrides: LlmConfig.Companion.LlmPropsOverride? = null,
-    ): Mono<ResponseEntity<AnalysisResponse>> {
+    ): Mono<ResponseEntity<GenericRegulatoryAnalysisResponse>> {
         return ControllerUtils.getBpmnXmlMono(bpmnXml)
             .flatMap { bpmnContent ->
                 Mono.fromCallable {

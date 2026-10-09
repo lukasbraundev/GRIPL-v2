@@ -1,3 +1,5 @@
+import {ComplianceRule} from "@/models/dto/ComplianceRule";
+
 export interface AnalysisRequest {
     bpmnXml: String
 }
@@ -7,9 +9,24 @@ export interface AnalysisResponse {
     ragContext?: Record<string, RagElementContext>;
 }
 
+export interface GenericRegulatoryAnalysisResponse {
+    criticalElements: GenericRegulatoryCriticalElement[];
+    ragContext?: never;
+}
+
+export interface GenericRegulatoryCriticalElement {
+    id: string;
+    name: string | null;
+    type?: string;
+    reason: string;
+    complianceRules: ComplianceRule[];
+}
+
+export type AnalysisResult = AnalysisResponse | GenericRegulatoryAnalysisResponse;
+
 export interface CriticalElement {
     id: string;
-    name: string;
+    name: string | null;
     type?: string;
     reason: string;
     references?: LlmReference[];

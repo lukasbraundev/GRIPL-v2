@@ -1,14 +1,14 @@
 "use server"
 
 import {LlmPropsOverride} from "@/models/dto/MultiEvaluationRequest";
-import {AnalysisResponse} from "@/models/dto/AnalysisDto";
+import {GenericRegulatoryAnalysisResponse} from "@/models/dto/AnalysisDto";
 import {extractErrorDetails} from "@/lib/http-error";
 
 export default async function analyzeBpmnForGenericRegulatories(
     bpmnXml: string,
     regulatoryIds: number[],
     llmProps: LlmPropsOverride,
-): Promise<AnalysisResponse> {
+): Promise<GenericRegulatoryAnalysisResponse> {
     const formData = new FormData();
     formData.append("bpmnXml", new Blob([bpmnXml], {type: "application/xml"}), "diagram.bpmn");
     formData.append(

@@ -3,8 +3,8 @@ package de.lukasbraun.genericregulatories.application
 import de.mertendieckmann.griplbackend.adapter.web.utils.ControllerUtils
 import de.mertendieckmann.griplbackend.application.BpmnExtractor
 import de.mertendieckmann.griplbackend.config.LlmConfig
-import de.mertendieckmann.griplbackend.model.analysis.BpmnAnalysisResult
-import de.mertendieckmann.griplbackend.model.dto.AnalysisResponse
+import de.lukasbraun.genericregulatories.model.GenericRegulatoryAnalysisResponse
+import de.lukasbraun.genericregulatories.model.GenericRegulatoryAnalysisResult
 import io.github.oshai.kotlinlogging.KLogger
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.core.env.Environment
@@ -28,13 +28,14 @@ class RegulatoryConformanceService (
      * @param llmPropsOverrides Optional overrides for the LLM properties.
      * @return An analysis report containing generic regulatory-relevant elements.
      */
-    public fun analyzeBpmnForGenericRegulatories(bpmnXml: String, regulatoryIds: List<Long>, llmPropsOverrides: LlmConfig.Companion.LlmPropsOverride?): AnalysisResponse {
+    public fun analyzeBpmnForGenericRegulatories(bpmnXml: String, regulatoryIds: List<Long>, llmPropsOverrides: LlmConfig.Companion.LlmPropsOverride?): GenericRegulatoryAnalysisResponse {
 
         // parse the BPMN XML and extract elements
         val bpmnElements = BpmnExtractor().extractBpmnElements(bpmnXml)
 
         // get all regulations from the database that match the provided regulatoryIds
         val regulations = regulatoryExtractor.extractRegulatoryElements(regulatoryIds)
+        val complianceRules = regulatoryExtractor.extractComplianceRules(regulatoryIds)
         log.info { "Extracted regulations: ${regulations.count()}" }
 
         // generate AIChatModel
@@ -52,15 +53,15 @@ class RegulatoryConformanceService (
 
         log.info { "Build Conformance Prompt, sending to LLM for analysis" }
 
-        val analysisResult = jacksonObjectMapper().readValue<BpmnAnalysisResult>(
+        val analysisResult = jacksonObjectMapper().readValue<GenericRegulatoryAnalysisResult>(
             chatModel.chat(conformancePrompt)
         ).resolveActivities(bpmnElements)
 
         log.info { "Analysis completed, returning result" }
-        val analysisResponse = AnalysisResponse.fromBpmnAnalysisResult(
+        val analysisResponse = GenericRegulatoryAnalysisResponse.fromAnalysisResult(
             result = analysisResult,
             bpmnElements = bpmnElements,
-            amountOfRetries = 0
+            complianceRules = complianceRules
         )
 
         log.info {

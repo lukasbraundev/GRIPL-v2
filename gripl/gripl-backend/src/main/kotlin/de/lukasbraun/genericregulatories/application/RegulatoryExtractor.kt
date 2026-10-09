@@ -29,7 +29,7 @@ class RegulatoryExtractor(
                 buildString {
                     append("Regulation: ${regulation.title}")
                     append(" (ID: ${regulation.id}, version: ${regulation.version})\n")
-                    append("Rule: ${rule.name}")
+                    append("Rule: ${rule.name} (ID: ${rule.id})")
                     rule.description?.let { append(" - $it") }
                     append(" [severity: ${rule.severity}]\n")
                     append("Constraint: ${constraint.leftOperandName} ")
@@ -40,4 +40,7 @@ class RegulatoryExtractor(
                 }
             }
     }
+
+    fun extractComplianceRules(regulatoryIds: List<Long>): List<ComplianceRule> =
+        complianceRuleRepository.getAll().filter { it.regulationId in regulatoryIds }
 }

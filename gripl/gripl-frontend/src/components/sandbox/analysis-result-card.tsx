@@ -1,11 +1,13 @@
-import {AnalysisResponse} from "@/models/dto/AnalysisDto";
+import {AnalysisResult} from "@/models/dto/AnalysisDto";
 import {Brain, ChevronDown, ChevronRight} from "lucide-react";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Collapsible, CollapsibleContent, CollapsibleTrigger} from "@/components/ui/collapsible";
+import Link from "next/link";
+import {ExternalLink} from "lucide-react";
 import {useState} from "react";
 
 interface AnalysisResultCardProps {
-    analysisResult: AnalysisResponse | null,
+    analysisResult: AnalysisResult | null,
     selectedElementId?: string | null
 }
 
@@ -43,6 +45,9 @@ export default function AnalysisResultCard({ analysisResult, selectedElementId }
                         <tr className="bg-muted">
                             <th className="text-left text-sm font-semibold p-2">Activity</th>
                             <th className="text-left text-sm font-semibold p-2">Reasoning</th>
+                            {analysisResult.criticalElements.some((element) => "complianceRules" in element) && (
+                                <th className="text-left text-sm font-semibold p-2">Compliance rules</th>
+                            )}
                         </tr>
                         </thead>
                         <tbody>
@@ -53,6 +58,32 @@ export default function AnalysisResultCard({ analysisResult, selectedElementId }
                                     {element.name || <span className="italic text-muted-foreground">{humanizeType(element.type)}</span>}
                                 </td>
                                 <td className="text-sm p-2">{element.reason || "No reasoning provided"}</td>
+                                {"complianceRules" in element && (
+                                    <td className="text-sm p-2">
+                                        {element.complianceRules.length > 0 ? (
+                                            <ul className="list-disc pl-4">
+                                                {element.complianceRules.map((rule) => (
+                                                    <li key={rule.id}>
+                                                        <Link
+                                                            href={`/regulatories/${rule.regulationId}/rules/${rule.id}`}
+                                                            className="font-medium text-primary underline-offset-2 hover:underline"
+                                                        >
+                                                            {rule.name}
+                                                            <ExternalLink className="ml-1 inline h-3 w-3" aria-hidden="true" />
+                                                        </Link>{" "}                                                
+                                                        {rule.description && (
+                                                            <span className="block text-xs text-muted-foreground">
+                                                                {rule.description}
+                                                            </span>
+                                                        )}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        ) : (
+                                            <span className="text-muted-foreground">No matching rule</span>
+                                        )}
+                                    </td>
+                                )}
                             </tr>
                         })}
                         </tbody>
