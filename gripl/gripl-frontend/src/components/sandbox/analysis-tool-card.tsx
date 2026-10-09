@@ -20,6 +20,25 @@ import {Switch} from "@/components/ui/switch";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import {useToast} from "@/components/ui/toast";
 import {extractErrorDetails, toErrorMessage} from "@/lib/http-error";
+import GenericRegulatoryAnalysisButton from "@/components/sandbox/generic-regulatory-analysis-button";
+import {useEffect} from "react";
+
+const ANALYSIS_CONFIG_STORAGE_KEY = "gripl:analysis-tool-config";
+const ANALYSIS_TIMEOUT_SECONDS = 1_800;
+const ANALYSIS_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL
+    ? `${process.env.NEXT_PUBLIC_API_BASE_URL.replace(/\/$/, "")}/gdpr/analysis/prompt-engineering`
+    : "/api/gdpr/analysis/prompt-engineering";
+
+interface StoredAnalysisConfig {
+    llmBaseUrl?: string;
+    modelName?: string;
+    apiKey?: string;
+    seed?: number | null;
+    temperature?: number | null;
+    topP?: number | null;
+    useRag?: boolean;
+    searchMode?: string;
+}
 
 interface AnalysisToolCardProps {
     bpmnXml: string;
@@ -38,8 +57,54 @@ export default function AnalysisToolCard({ bpmnXml, analysisResult, setAnalysisR
     const [useRag, setUseRag] = useState<boolean>(false)
     const [searchMode, setSearchMode] = useState<string>("hybrid")
     const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false)
+    const [hasRestoredConfig, setHasRestoredConfig] = useState<boolean>(false)
 
     const {showError} = useToast()
+
+    useEffect(() => {
+        try {
+            const storedConfig = window.localStorage.getItem(ANALYSIS_CONFIG_STORAGE_KEY);
+            if (storedConfig) {
+                const config: StoredAnalysisConfig = JSON.parse(storedConfig);
+                if (typeof config.llmBaseUrl === "string") setLlmBaseUrl(config.llmBaseUrl);
+                if (typeof config.modelName === "string") setModelName(config.modelName);
+                if (typeof config.apiKey === "string") setApiKey(config.apiKey);
+                if (typeof config.seed === "number" || config.seed === null) setSeed(config.seed ?? null);
+                if (typeof config.temperature === "number" || config.temperature === null) {
+                    setTemperature(config.temperature ?? null);
+                }
+                if (typeof config.topP === "number" || config.topP === null) setTopP(config.topP ?? null);
+                if (typeof config.useRag === "boolean") setUseRag(config.useRag);
+                if (config.searchMode === "naive" || config.searchMode === "global" || config.searchMode === "hybrid") {
+                    setSearchMode(config.searchMode);
+                }
+            }
+        } catch (error) {
+            console.error("Failed to restore analysis tool configuration:", error);
+        } finally {
+            setHasRestoredConfig(true);
+        }
+    }, [])
+
+    useEffect(() => {
+        if (!hasRestoredConfig) return;
+
+        try {
+            const config: StoredAnalysisConfig = {
+                llmBaseUrl,
+                modelName,
+                apiKey,
+                seed,
+                temperature,
+                topP,
+                useRag,
+                searchMode,
+            };
+            window.localStorage.setItem(ANALYSIS_CONFIG_STORAGE_KEY, JSON.stringify(config));
+        } catch (error) {
+            console.error("Failed to persist analysis tool configuration:", error);
+        }
+    }, [hasRestoredConfig, llmBaseUrl, modelName, apiKey, seed, temperature, topP, useRag, searchMode])
 
     function handleAnalyzeClick() {
         setAnalysisResult(null);
@@ -49,14 +114,15 @@ export default function AnalysisToolCard({ bpmnXml, analysisResult, setAnalysisR
         const formData = new FormData();
         formData.append("bpmnFile", xmlBlob, "diagram.bpmn");
 
-        const llmProps = {
+        const llmProps: LlmPropsOverride = {
             baseUrl: llmBaseUrl || null,
             modelName: modelName || null,
             apiKey: apiKey || null,
+            timeoutSeconds: ANALYSIS_TIMEOUT_SECONDS,
             seed: seed || null,
             temperature: temperature || null,
             topP: topP || null
-        } as LlmPropsOverride
+        }
         const jsonBlob = new Blob([JSON.stringify(llmProps)], { type: "application/json" });
         formData.append("llmProps", jsonBlob);
         formData.append("useRag", String(useRag));
@@ -64,7 +130,7 @@ export default function AnalysisToolCard({ bpmnXml, analysisResult, setAnalysisR
             formData.append("ragMode", searchMode);
         }
 
-        fetch(`/api/gdpr/analysis/prompt-engineering`, {
+        fetch(ANALYSIS_API_URL, {
             method: "POST",
             headers: {
                 Accept: "application/json"
@@ -199,6 +265,19 @@ export default function AnalysisToolCard({ bpmnXml, analysisResult, setAnalysisR
                     Analyze for GDPR
                 </>}</>
             </Button>
+            <GenericRegulatoryAnalysisButton
+                bpmnXml={bpmnXml}
+                setAnalysisResult={setAnalysisResult}
+                llmProps={{
+                    baseUrl: llmBaseUrl || null,
+                    modelName: modelName || null,
+                    apiKey: apiKey || null,
+                    timeoutSeconds: ANALYSIS_TIMEOUT_SECONDS,
+                    seed,
+                    temperature,
+                    topP,
+                }}
+            />
             <Button
                 onClick={handleDownloadResultClick}
                 variant="outline"

@@ -24,4 +24,7 @@ export interface LlmPropsOverride {
     modelName?: string | null;
     apiKey?: string | null;
     timeoutSeconds?: number | null;
+    seed?: number | null;
+    temperature?: number | null;
+    topP?: number | null;
 }

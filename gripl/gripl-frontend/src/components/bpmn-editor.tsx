@@ -357,36 +357,36 @@ export default function BpmnEditor({ title, bpmnXml, highlightedActivityIds = []
             </Button>
           </div>
         </div>
-        <div ref={containerRef} className={`w-full flex-1 relative ${editorClassName}`}>
+        <div className={`w-full flex-1 relative ${editorClassName}`}>
+          <div ref={containerRef} className="absolute inset-0" />
           {cards && Object.entries(
-            cards.reduce((acc, card) => {
-              if (!acc[card.position]) {
-                acc[card.position] = [];
-              }
-              acc[card.position].push(card);
-              return acc;
-            }, {} as Record<string, BpmnToolCard[]>)
+              cards.reduce((acc, card) => {
+                if (!acc[card.position]) {
+                  acc[card.position] = [];
+                }
+                acc[card.position].push(card);
+                return acc;
+              }, {} as Record<string, BpmnToolCard[]>)
           ).map(([position, positionCards]) => (
-            <div
-                key={`bpmn-editor-position-${position}`}
-                className={`absolute z-50 gap-4
-                  ${position === "bottom-left" ? "left-4 bottom-4 flex-flex-col items-start" : ""}
-                  ${position === "bottom-right" ? "right-4 bottom-14 flex flex-col items-end" : ""}
-                  ${position === "top-right" ? "right-4 top-4 flex flex-col items-end" : ""}
-                  ${position === "right-center" ? "right-4 top-1/2 transform -translate-y-1/2 flex flex-col" : ""}
-                  ${position === "bottom-center" ? "left-1/2 transform -translate-x-1/2 bottom-4 flex flex-row items-end" : ""}
-                  ${position === "top-center" ? "left-1/2 transform -translate-x-1/2 top-4 flex flex-row items-start" : ""}
-                `}
-            >
-              {positionCards.map((card, index) => (
-                  <div key={`card-${position}-${index}`}>
-                    {card.content}
-                  </div>
-              ))}
-            </div>
+              <div
+                  key={`bpmn-editor-position-${position}`}
+                  className={`absolute z-50 gap-4
+                    ${position === "bottom-left" ? "left-4 bottom-4 flex-flex-col items-start" : ""}
+                    ${position === "bottom-right" ? "right-4 bottom-14 flex flex-col items-end" : ""}
+                    ${position === "top-right" ? "right-4 top-4 flex flex-col items-end" : ""}
+                    ${position === "right-center" ? "right-4 top-1/2 transform -translate-y-1/2 flex flex-col" : ""}
+                    ${position === "bottom-center" ? "left-1/2 transform -translate-x-1/2 bottom-4 flex flex-row items-end" : ""}
+                    ${position === "top-center" ? "left-1/2 transform -translate-x-1/2 top-4 flex flex-row items-start" : ""}
+                  `}
+              >
+                {positionCards.map((card, index) => (
+                    <div key={`card-${position}-${index}`}>
+                      {card.content}
+                    </div>
+                ))}
+              </div>
           ))}
         </div>
       </div>
   )
 }
-
