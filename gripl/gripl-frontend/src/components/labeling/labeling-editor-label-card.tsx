@@ -41,7 +41,7 @@ export default function ({ elementName, elementId, criticalActivities, onLabelin
                         onLabelingChange(elementId, checked, reason)
                     }}
                 />
-                <Label htmlFor="label-mode">Is GDPR critical</Label>
+                <Label htmlFor="label-mode">Regulation critical</Label>
             </div>
             { criticalChecked && <div className="mt-4 flex flex-col space-y-2">
                 <Label htmlFor="reason">Reason for labeling</Label>
