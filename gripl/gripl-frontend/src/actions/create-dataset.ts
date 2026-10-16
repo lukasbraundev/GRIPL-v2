@@ -1,12 +1,14 @@
 "use server"
 
-export default async function createDataset(name: string, description: string): Promise<number> {
+import {DatasetType} from "@/models/dto/Dataset";
+
+export default async function createDataset(name: string, description: string, type: DatasetType, regulationIds: number[]): Promise<number> {
     const result = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/dataset`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name, description }),
+        body: JSON.stringify({name, description, type, regulationIds}),
     })
         .then(response => {
             if (!response.ok) {

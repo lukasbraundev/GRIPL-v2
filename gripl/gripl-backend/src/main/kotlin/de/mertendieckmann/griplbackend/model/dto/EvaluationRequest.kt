@@ -8,6 +8,7 @@ data class EvaluationRequest(
     val maxConcurrent: Int = 4,
     val datasets: List<Int>,
     val evaluationDataIds: List<Int> = emptyList(),
+    val regulatoryIds: List<Long> = emptyList(),
     val useRag: Boolean = false,
     val ragMode: RagMode = RagMode.HYBRID,
     val evaluateRag: Boolean = true,

@@ -3,6 +3,7 @@ package de.mertendieckmann.griplbackend.repository
 import tools.jackson.databind.ObjectMapper
 import de.mertendieckmann.griplbackend.model.dto.CreateDatasetRequest
 import de.mertendieckmann.griplbackend.model.dto.Dataset
+import de.mertendieckmann.griplbackend.model.dto.DatasetType
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.stereotype.Repository
@@ -19,13 +20,16 @@ class DatasetRepository(
             name = rs.getString("name"),
             description = rs.getString("description"),
             createdAt = rs.getString("created_at"),
-            updatedAt = rs.getString("updated_at")
+            updatedAt = rs.getString("updated_at"),
+            type = DatasetType.valueOf(rs.getString("type")),
+            regulationIds = objectMapper.readValue(rs.getString("regulation_ids"), List::class.java)
+                .map { (it as Number).toLong() }
         )
     }
 
     fun createDataset(request: CreateDatasetRequest): Int {
-        val sql = "INSERT INTO dataset (name, description) VALUES (?, ?)"
-        return jdbc.update(sql, request.name, request.description)
+        val sql = "INSERT INTO dataset (name, description, type, regulation_ids) VALUES (?, ?, ?, ?::jsonb)"
+        return jdbc.update(sql, request.name, request.description, request.type.name, objectMapper.writeValueAsString(request.regulationIds))
     }
 
     fun getAllDatasets(): List<Dataset> {
@@ -49,4 +53,10 @@ class DatasetRepository(
         val sql = "DELETE FROM dataset WHERE id = ?"
         return jdbc.update(sql, id)
     }
+
+    fun updateDataset(id: Long, request: CreateDatasetRequest): Int {
+        val sql = "UPDATE dataset SET name = ?, description = ?, type = ?, regulation_ids = ?::jsonb, updated_at = now() WHERE id = ?"
+        return jdbc.update(sql, request.name, request.description, request.type.name, objectMapper.writeValueAsString(request.regulationIds), id)
+    }
+
 }

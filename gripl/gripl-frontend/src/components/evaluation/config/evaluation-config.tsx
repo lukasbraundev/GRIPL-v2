@@ -19,7 +19,7 @@ interface EvaluationConfigCardMultiProps {
 }
 
 export default function EvaluationConfig({ className, children, datasets, onMultiConfigChanged }: EvaluationConfigCardMultiProps) {
-    const config = useEvaluationConfig(datasets, onMultiConfigChanged);
+    const config = useEvaluationConfig(onMultiConfigChanged);
 
     const { fileInputRef, onClickImportYaml, onFileChange, onClickExportYaml } = useYamlImportExport({
         availableEvaluationEndpoints: config.availableEvaluationEndpoints,
@@ -98,6 +98,7 @@ export default function EvaluationConfig({ className, children, datasets, onMult
                         selectedTestCaseIds={config.selectedTestCaseIds}
                         onDatasetsChange={config.setSelectedDatasets}
                         onTestCasesChange={config.setSelectedTestCaseIds}
+                        evaluationEndpoint={config.effectiveDefaultEndpoint}
                     />
                 </div>
 

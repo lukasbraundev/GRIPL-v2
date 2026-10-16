@@ -14,6 +14,7 @@ interface EvaluationConfigDatasetSettingsProps {
     selectedTestCaseIds: number[];
     onDatasetsChange: (ids: number[]) => void;
     onTestCasesChange: (ids: number[]) => void;
+    evaluationEndpoint: string;
 }
 
 export default function EvaluationConfigDatasetSettings({
@@ -22,6 +23,7 @@ export default function EvaluationConfigDatasetSettings({
     selectedTestCaseIds,
     onDatasetsChange,
     onTestCasesChange,
+    evaluationEndpoint,
 }: EvaluationConfigDatasetSettingsProps) {
     const [testCasesByDataset, setTestCasesByDataset] = useState<Record<number, EvaluationDataMeta[]>>({});
     const [loadingDatasets, setLoadingDatasets] = useState<Record<number, boolean>>({});
@@ -30,6 +32,29 @@ export default function EvaluationConfigDatasetSettings({
     selectedDatasetsRef.current = selectedDatasets;
     const selectedTestCaseIdsRef = useRef(selectedTestCaseIds);
     selectedTestCaseIdsRef.current = selectedTestCaseIds;
+
+    const endpointType = evaluationEndpoint.includes("/generic-regulatories/")
+        ? "GENERIC_REGULATORIES"
+        : evaluationEndpoint.includes("/gdpr/")
+            ? "GDPR"
+            : null;
+
+    useEffect(() => {
+        if (!endpointType) return;
+        const compatibleIds = new Set(
+            datasets.filter((dataset) => dataset.type === endpointType).map((dataset) => dataset.id)
+        );
+        const removedIds = selectedDatasets.filter((id) => !compatibleIds.has(id));
+        if (removedIds.length === 0) return;
+
+        onDatasetsChange(selectedDatasets.filter((id) => compatibleIds.has(id)));
+        const removedTestCaseIds = removedIds.flatMap((id) =>
+            (testCasesByDataset[id] ?? []).map((testCase) => testCase.id)
+        );
+        if (removedTestCaseIds.length > 0) {
+            onTestCasesChange(selectedTestCaseIds.filter((id) => !removedTestCaseIds.includes(id)));
+        }
+    }, [endpointType, datasets, selectedDatasets, selectedTestCaseIds, testCasesByDataset]);
 
     useEffect(() => {
         const missing = selectedDatasets.filter(
@@ -114,14 +139,28 @@ export default function EvaluationConfigDatasetSettings({
             <CardContent className="space-y-4">
                 <div className="space-y-2">
                     <Label>Select Datasets</Label>
-                    <div className="flex flex-wrap gap-2">
-                        {datasets.map((ds) => {
+                    <div className="space-y-3">
+                        {(["GDPR", "GENERIC_REGULATORIES"] as const).map((type) => {
+                            const typeDatasets = datasets.filter((dataset) => dataset.type === type);
+                            if (typeDatasets.length === 0) return null;
+                            const isCompatible = !endpointType || endpointType === type;
+                            return <div key={type} className="space-y-1.5">
+                                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                                    {type === "GDPR" ? "GDPR datasets" : "Generic regulation datasets"}
+                                </p>
+                                <div className="flex flex-wrap gap-2">
+                                {typeDatasets.map((ds) => {
                             const active = selectedDatasets.includes(ds.id);
                             return (
                                 <button
                                     key={ds.id}
                                     onClick={() => toggleDataset(ds.id)}
-                                    className={`px-3 py-1.5 rounded-md text-sm border transition-colors ${
+                                    disabled={!isCompatible}
+                                    title={!isCompatible ? `Not compatible with the selected ${endpointType === "GDPR" ? "GDPR" : "generic regulation"} endpoint` : undefined}
+                                    className={`rounded-md border px-3 py-1.5 text-sm transition-colors ${
+                                        !isCompatible
+                                            ? "cursor-not-allowed border-border bg-muted/50 text-muted-foreground/50"
+                                            :
                                         active
                                             ? "bg-primary text-primary-foreground border-primary"
                                             : "bg-muted text-muted-foreground border-border hover:bg-accent hover:text-accent-foreground"
@@ -130,6 +169,9 @@ export default function EvaluationConfigDatasetSettings({
                                     {ds.name}
                                 </button>
                             );
+                                })}
+                                </div>
+                            </div>;
                         })}
                     </div>
                 </div>

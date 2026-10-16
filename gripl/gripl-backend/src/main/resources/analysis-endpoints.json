@@ -6,5 +6,9 @@
   {
     "name": "Baseline Analysis",
     "endpoint": "/gdpr/analysis/baseline"
+  },
+  {
+    "name": "Generic Regulatory Conformance",
+    "endpoint": "/generic-regulatories/conformance/analyze"
   }
 ]

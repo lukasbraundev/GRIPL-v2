@@ -67,7 +67,7 @@ export default function CreateTestCaseButton({ dataset }: CreateTestCaseButtonPr
     }
 
     return <Dialog open={showCreateTestCaseDialog} onOpenChange={setShowCreateTestCaseDialog}>
-        <Button className="h-full" onClick={() => setShowCreateTestCaseDialog(true)}>
+        <Button className="h-9" onClick={() => setShowCreateTestCaseDialog(true)}>
             <Plus />
             <span className="pl-2 text-center">Create Test Case</span>
         </Button>

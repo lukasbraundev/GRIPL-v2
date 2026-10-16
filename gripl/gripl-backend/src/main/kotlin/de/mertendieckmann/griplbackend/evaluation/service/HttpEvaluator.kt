@@ -1,9 +1,11 @@
 package de.mertendieckmann.griplbackend.evaluation.service
 
 import tools.jackson.module.kotlin.jacksonObjectMapper
+import tools.jackson.module.kotlin.readValue
 import de.mertendieckmann.griplbackend.model.dto.AnalysisResponse
 import de.mertendieckmann.griplbackend.model.dto.EvaluationRequest
 import de.mertendieckmann.griplbackend.model.dto.ExpectedValue
+import de.lukasbraun.genericregulatories.model.GenericRegulatoryAnalysisResponse
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.http.MediaType
@@ -16,7 +18,7 @@ import org.springframework.web.reactive.function.client.awaitBody
 
 @Service
 class HttpEvaluator(
-    @Value("\${server.port:8080}") private val serverPort: Int
+    @Value("\${server.port:8080}") private val serverPort: Int,
 ): Evaluator {
 
     private val webClient = WebClient.builder()
@@ -25,9 +27,16 @@ class HttpEvaluator(
 
     override suspend fun evaluate(bpmnXml: String, evaluationRequest: EvaluationRequest): EvaluationCallResult {
         val bodyBuilder = MultipartBodyBuilder()
-        bodyBuilder.part("bpmnFile", ByteArrayResource(bpmnXml.toByteArray()))
-            .header("Content-Disposition", "form-data; name=\"bpmnFile\"; filename=\"process.bpmn\"")
+        val isConformanceEndpoint = evaluationRequest.evaluationEndpoint.contains("/generic-regulatories/conformance/")
+        val bpmnPartName = if (isConformanceEndpoint) "bpmnXml" else "bpmnFile"
+        bodyBuilder.part(bpmnPartName, ByteArrayResource(bpmnXml.toByteArray()))
+            .header("Content-Disposition", "form-data; name=\"$bpmnPartName\"; filename=\"process.bpmn\"")
             .contentType(MediaType.APPLICATION_XML)
+        if (isConformanceEndpoint) {
+            bodyBuilder.part("regulatoryIds", jacksonObjectMapper().writeValueAsString(evaluationRequest.regulatoryIds))
+                .header("Content-Disposition", "form-data; name=\"regulatoryIds\"")
+                .contentType(MediaType.APPLICATION_JSON)
+        }
         evaluationRequest.llmProps?.let { overrides ->
             bodyBuilder.part("llmProps", jacksonObjectMapper().writeValueAsString(overrides))
                 .header("Content-Disposition", "form-data; name=\"llmProps\"")
@@ -46,13 +55,29 @@ class HttpEvaluator(
         }
 
         try {
-            val analysisResponse: AnalysisResponse = webClient
+            val responseBody: String = webClient
                 .post()
                 .uri(absoluteEndpoint)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .body(BodyInserters.fromMultipartData(bodyBuilder.build()))
                 .retrieve()
                 .awaitBody()
+            val analysisResponse = if (isConformanceEndpoint) {
+                val conformanceResponse = jacksonObjectMapper()
+                    .readValue<GenericRegulatoryAnalysisResponse>(responseBody)
+                AnalysisResponse(
+                    criticalElements = conformanceResponse.criticalElements.map {
+                        AnalysisResponse.CriticalElement(
+                            id = it.id,
+                            name = it.name,
+                            type = it.type,
+                            reason = it.reason
+                        )
+                    }
+                )
+            } else {
+                jacksonObjectMapper().readValue<AnalysisResponse>(responseBody)
+            }
 
             return EvaluationCallResult(
                 expectedValues = analysisResponse.criticalElements.map {

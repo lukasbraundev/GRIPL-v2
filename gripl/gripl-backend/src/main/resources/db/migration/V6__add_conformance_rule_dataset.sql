@@ -1,0 +1,7 @@
+ALTER TABLE dataset
+    ADD COLUMN type VARCHAR(32) NOT NULL DEFAULT 'GDPR',
+    ADD COLUMN regulation_ids JSONB NOT NULL DEFAULT '[]'::jsonb;
+
+
+
+

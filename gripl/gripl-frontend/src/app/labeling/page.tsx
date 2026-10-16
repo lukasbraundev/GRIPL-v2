@@ -3,10 +3,11 @@ import {EvaluationDataMeta} from "@/models/dto/EvaluationData";
 import DatasetList from "@/components/labeling/dataset-list";
 import getDatasets from "@/actions/get-datasets";
 import CreateDatasetButton from "@/components/labeling/create-dataset-button";
+import getRegulatories from "@/actions/generic-regulatories/get-regulatories";
 
 export default async function LabelingPage() {
 
-    const datasets = await getDatasets()
+    const [datasets, regulatories] = await Promise.all([getDatasets(), getRegulatories()])
     const evaluationMetadata: EvaluationDataMeta[] = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/dataset/testcase`, {
         method: "GET",
         headers: {
@@ -29,9 +30,9 @@ export default async function LabelingPage() {
         <div className="container mx-auto">
             <div className="flex flex-row justify-between items-start">
                 <h2 className="font-bold text-3xl mb-6">Labeling Datasets</h2>
-                <CreateDatasetButton />
+                <CreateDatasetButton regulatories={regulatories}/>
             </div>
-            <DatasetList datasets={datasets} evaluationMetadata={evaluationMetadata}/>
+            <DatasetList datasets={datasets} evaluationMetadata={evaluationMetadata} regulatories={regulatories}/>
         </div>
     </div>
 }

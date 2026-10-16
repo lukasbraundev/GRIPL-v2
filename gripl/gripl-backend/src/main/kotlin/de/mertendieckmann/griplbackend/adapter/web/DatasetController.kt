@@ -30,6 +30,21 @@ class DatasetController(
         }
     }
 
+    @PutMapping("/{datasetId}", consumes = [MediaType.APPLICATION_JSON_VALUE])
+    fun updateDataset(
+        @PathVariable datasetId: Long,
+        @RequestBody request: CreateDatasetRequest
+    ): ResponseEntity<String> {
+        if (datasetRepository.getDatasetById(datasetId) == null) {
+            return ResponseEntity.notFound().build()
+        }
+        return if (datasetRepository.updateDataset(datasetId, request) > 0) {
+            ResponseEntity.ok("Dataset updated successfully")
+        } else {
+            ResponseEntity.internalServerError().body("Failed to update dataset")
+        }
+    }
+
     @Operation(
         summary = "Get all Datasets",
         description = "Returns a list of all available datasets."

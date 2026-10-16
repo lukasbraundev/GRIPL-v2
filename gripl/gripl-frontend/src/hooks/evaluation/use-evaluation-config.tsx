@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import fetchAnalysisEndpoints from "@/actions/analysis-endpoints";
-import { Dataset } from "@/models/dto/Dataset";
 import { ModelRunConfig, MultiEvaluationRequest } from "@/models/dto/MultiEvaluationRequest";
 import {EndpointChoice, ModelRowState} from "@/models/evaluation/Config";
 import {cryptoRandomId, normalize} from "@/lib/evaluation-config-utils";
@@ -24,7 +23,6 @@ export function newModelRow(index: number): ModelRowState {
 }
 
 export function useEvaluationConfig(
-    datasets: Dataset[],
     onMultiConfigChanged: (config: MultiEvaluationRequest) => void
 ) {
     const [availableEvaluationEndpoints, setAvailableEvaluationEndpoints] = useState<AnalysisEndpoint[]>([]);

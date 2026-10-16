@@ -2,6 +2,7 @@ package de.mertendieckmann.griplbackend.evaluation
 
 import de.mertendieckmann.griplbackend.model.dto.EvaluationMetadataReport
 import de.mertendieckmann.griplbackend.model.dto.EvaluationRequest
+import de.mertendieckmann.griplbackend.model.dto.Dataset
 import de.mertendieckmann.griplbackend.model.dto.ModelReportEnvelope
 import de.mertendieckmann.griplbackend.model.dto.MultiEvaluationRequest
 import de.mertendieckmann.griplbackend.repository.DatasetRepository
@@ -26,7 +27,11 @@ class MultiEvaluationRunner(
 
         val baseSeed = request.seed ?: (System.currentTimeMillis() * (Math.random() * 10) % Int.MAX_VALUE).toInt()
         val repetitions = request.repetitions.coerceAtLeast(1)
-        emit(ModelReportEnvelope("", createMetadata(request, baseSeed, repetitions), 1))
+        val datasets = datasetRepository.getDatasetsByIds(request.datasets.map { it.toLong() })
+        val regulatoryIds = datasets
+            .flatMap { it.regulationIds }
+            .distinct()
+        emit(ModelReportEnvelope("", createMetadata(request, datasets, baseSeed, repetitions), 1))
 
         for (runNumber in 1..repetitions) {
             log.info { "Starting evaluation run $runNumber/$repetitions" }
@@ -43,6 +48,7 @@ class MultiEvaluationRunner(
                     maxConcurrent = request.maxConcurrent,
                     datasets = request.datasets,
                     evaluationDataIds = request.evaluationDataIds,
+                    regulatoryIds = regulatoryIds,
                     useRag = request.useRag,
                     ragMode = request.ragMode,
                     evaluateRag = request.evaluateRag,
@@ -58,8 +64,12 @@ class MultiEvaluationRunner(
         }
     }
 
-    private fun createMetadata(request: MultiEvaluationRequest, seed: Int, repetitions: Int): EvaluationMetadataReport {
-        val datasets = datasetRepository.getDatasetsByIds(request.datasets.map { it.toLong() })
+    private fun createMetadata(
+        request: MultiEvaluationRequest,
+        datasets: List<Dataset>,
+        seed: Int,
+        repetitions: Int
+    ): EvaluationMetadataReport {
         val totalTestCases = if (request.evaluationDataIds.isNotEmpty()) {
             request.evaluationDataIds.size
         } else {
